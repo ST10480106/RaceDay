@@ -1,0 +1,48 @@
+name: Build and Test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Find the solution file
+        id: sln
+        run: |
+          SLN=$(find . -name "*.sln" | head -n 1)
+          if [ -z "$SLN" ]; then
+            echo "No .sln file found in the repository"
+            exit 1
+          fi
+          echo "Using solution: $SLN"
+          echo "path=$SLN" >> "$GITHUB_OUTPUT"
+
+      - name: Restore
+        run: dotnet restore "${{ steps.sln.outputs.path }}"
+
+      - name: Build
+        run: dotnet build "${{ steps.sln.outputs.path }}" --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test "${{ steps.sln.outputs.path }}" --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx" --results-directory TestResults
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults
