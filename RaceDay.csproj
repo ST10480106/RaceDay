@@ -12,6 +12,8 @@
 
   <ItemGroup>
     <Folder Include="Controllers\" />
+    <Folder Include="Database\" />
+    <Folder Include="Models\" />
   </ItemGroup>
 
 </Project>
