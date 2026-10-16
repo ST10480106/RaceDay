@@ -13,11 +13,22 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      - name: Find solution
+        id: find_sln
+        run: |
+          SOLUTION=$(find . -maxdepth 6 -name '*.sln' | head -n 1 || true)
+          if [ -z "$SOLUTION" ]; then
+            echo "No .sln file found in the repository"
+            exit 1
+          fi
+          echo "Found solution: $SOLUTION"
+          echo "solution=$SOLUTION" >> $GITHUB_OUTPUT
+
       - name: Restore
-        run: dotnet restore Part2-API/RaceDay.sln
+        run: dotnet restore "${{ steps.find_sln.outputs.solution }}"
 
       - name: Build
-        run: dotnet build Part2-API/RaceDay.sln --no-restore
+        run: dotnet build "${{ steps.find_sln.outputs.solution }}" --no-restore
 
       - name: Test
-        run: dotnet test Part2-API/RaceDay.sln --no-build --verbosity normal
+        run: dotnet test "${{ steps.find_sln.outputs.solution }}" --no-build --verbosity normal
