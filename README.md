@@ -25,7 +25,7 @@ RESTful ASP.NET Core Web API for the RaceDay running/walking/cycling event syste
 
 ![Build and Test](docs/ci-green.png)
 
-**Demo Youtube video:** <paste your unlisted YouTube link>
+**Youtube video:** https://youtu.be/54072iTWuBY
 
 ## Technologies
 - ASP.NET Core Web API (.NET 8), C#
