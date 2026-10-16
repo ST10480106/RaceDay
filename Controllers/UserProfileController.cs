@@ -18,17 +18,15 @@ namespace RaceDay.Controllers
         }
 
         /// <summary>Gets the logged-in user's own profile.</summary>
-        /// <remarks>No body. Returns 200 with the profile, or 401 if not logged in.</remarks>
+        /// <remarks>Returns 200 with the profile, or 401 if not logged in.</remarks>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public IActionResult GetProfile()
         {
-            //any logged-in user (either role) may view their own profile
             IActionResult? denied = RequireLogin();
             if (denied != null) return denied;
 
-            //the id comes from the session, so a user can only ever see their own profile
             User? user = _users.get_user_by_id(CurrentUserId!);
             if (user == null) return Unauthorized(new { message = "Account no longer exists." });
 
@@ -37,7 +35,7 @@ namespace RaceDay.Controllers
 
         /// <summary>Updates the logged-in user's own profile.</summary>
         /// <remarks>
-        /// Expects fullName and email. Participants may also send dateOfBirth and gender.
+        /// Inputs are query parameters: fullName and email. Participants may also send dateOfBirth (yyyy-MM-dd) and gender.
         /// Returns 200 with the updated profile, 400 for bad data, 401 if not logged in, 409 if the email belongs to someone else.
         /// </remarks>
         [HttpPut]
@@ -45,7 +43,7 @@ namespace RaceDay.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public IActionResult UpdateProfile(UpdateProfileRequest request)
+        public IActionResult UpdateProfile([FromQuery] UpdateProfileRequest request)
         {
             IActionResult? denied = RequireLogin();
             if (denied != null) return denied;
@@ -58,7 +56,6 @@ namespace RaceDay.Controllers
             User? user = _users.get_user_by_id(CurrentUserId!);
             if (user == null) return Unauthorized(new { message = "Account no longer exists." });
 
-            //the new email may not belong to a different user (the user's own email is ignored)
             string email = request.Email.Trim().ToLowerInvariant();
             if (_users.email_exists(email, user.UserId))
             {
